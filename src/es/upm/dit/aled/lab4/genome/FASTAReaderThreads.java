@@ -1,6 +1,7 @@
 package es.upm.dit.aled.lab4.genome;
 
 import java.io.DataInput;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -115,8 +116,30 @@ public class FASTAReaderThreads {
 	 *         pattern in the data.
 	 */
 	public List<Integer> search(byte[] pattern) {
-		// TODO
-		return null;
+		//NO lo he hecho yo, copiado de clase, hay líneas que no entiendo, REVISAR
+		List<Integer> res = new ArrayList<>();
+		List<Future<List<Integer>>> futuros = new ArrayList<>();
+		int cores = Runtime.getRuntime().availableProcessors();
+		int newSize = validBytes/cores;
+		ExecutorService executor = Executors.newFixedThreadPool(cores);
+		
+		//Creo todas las tareas, menos la última:
+		for(int i=0; i<cores-1; i++) {
+			int lo = i * newSize;
+			int hi = (i+1) * newSize;
+			FASTASearchCallable tarea = new FASTASearchCallable(this, lo, hi, pattern);
+			Future<List<Integer>> futuro = executor.submit(tarea);
+			futuros.add(futuro);
+		};
+		int lo = 0; // lo no tiene este valor era para guardarlo sin errores
+		int hi = validBytes;
+		FASTASearchCallable tarea = new FASTASearchCallable(this, lo, hi, pattern);
+		Future<List<Integer>> futuro = executor.submit(tarea);
+		futuros.add(futuro);
+		//for(Future<List<Integer>> futuro ; futuros) {
+			
+		//}
+		return res;
 	}
 
 	public static void main(String[] args) {
